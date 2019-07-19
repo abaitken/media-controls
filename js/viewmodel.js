@@ -14,7 +14,7 @@ function ViewModel()
 					if(node.id === "err")
 						return;
 					
-					url = 'http://dlnarest.localhost:8080/index.php/browse'
+					url = 'http://dnlaapi.services.lan/index.php/browse'
 					if(node.id !== "#")
 						url = url + '/' + node.id;
 					
@@ -26,20 +26,34 @@ function ViewModel()
 						success: function (data) {
 							var nodes = [];
 							
-							if(Array.isArray(data.container))
-								data.container.forEach(function(item, index, array){
+							if(data['container'])
+								if(Array.isArray(data.container))
+									data.container.forEach(function(item, index, array){
+										nodes.push({"text" : item['title'], "id" : item['@attributes']['id'], "children" : item['@attributes']['childCount'] !== '0'});
+									});
+								else
+								{
+									var item = data.container;
 									nodes.push({"text" : item['title'], "id" : item['@attributes']['id'], "children" : item['@attributes']['childCount'] !== '0'});
-								});
-								
-							if(Array.isArray(data.item))
-								data.item.forEach(function(item, index, array){
+								}
+							
+							if(data['item'])
+								if(Array.isArray(data.item))
+									data.item.forEach(function(item, index, array){
+										nodes.push({"text" : item['title'], "id" : item['@attributes']['id'], "children" : false, "icon" : "jstree-file"});
+									});
+								else
+								{
+									var item = data.item;
 									nodes.push({"text" : item['title'], "id" : item['@attributes']['id'], "children" : false, "icon" : "jstree-file"});
-								});
+								}
+								
 							cb(nodes);
 						},
 						error: function(jqXHR, textStatus, errorThrown) {
 							self.messages(errorThrown);
 							$('#messages').attr("class","alert alert-danger");
+							// TODO : Text not displaying correctly
 							cb([{"text" : "Error: " + errorThrown, "id" : "err", "children" : false}]);
 						}
 					});
