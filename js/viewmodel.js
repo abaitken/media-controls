@@ -7,14 +7,41 @@ function ViewModel()
     self.Init = function ()
     {
         ko.applyBindings(self);
-		
+		$('#treeview')
+              .on('changed.jstree', function (e, data) {
+                var r = [];
+                for(var i = 0, j = data.selected.length; i < j; i++) {
+                  r.push(data.instance.get_node(data.selected[i]).id);
+                }
+                
+                var id = r[0];
+                
+                var url = 'http://dnlaapi.services.lan/index.php/info/' + id;
+                
+                $.ajax({
+						type: 'GET',
+						url: url,
+						dataType: 'json',
+						mimeType: 'application/json',
+						success: function (data) {
+							$('#track-info').html(data['title']);
+						},
+						error: function(jqXHR, textStatus, errorThrown) {
+							self.messages(errorThrown);
+							$('#messages').attr("class","alert alert-danger");
+							// TODO : Text not displaying correctly
+                            $('#track-info').html("Error: " + errorThrown);
+						}
+					});
+              });
+              
 		$('#treeview').jstree({
 			'core' : {
 				'data' : function (node, cb) {
 					if(node.id === "err")
 						return;
 					
-					url = 'http://dnlaapi.services.lan/index.php/browse'
+					var url = 'http://dnlaapi.services.lan/index.php/browse'
 					if(node.id !== "#")
 						url = url + '/' + node.id;
 					
